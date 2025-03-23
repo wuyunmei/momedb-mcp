@@ -27,6 +27,7 @@ class MemobaseMcpServer {
   private server: Server;
 
   constructor() {
+    console.error('[INFO] Initializing MemoBase MCP server');
     this.server = new Server(
       {
         name: 'memobase',
@@ -43,14 +44,15 @@ class MemobaseMcpServer {
     
     // Error handling
     this.server.onerror = (error) => console.error('[MCP Error]', error);
-    process.on('SIGINT', async () => {
-      await this.server.close();
-      process.exit(0);
-    });
+  }
+
+  async close() {
+    console.error('[INFO] Closing MemoBase MCP server');
+    await this.server.close();
   }
 
   private setupToolHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    this.server.setRequestHandler(ListToolsRequestSchema, async (request) => ({
       tools: [
         {
           name: 'create_user',
@@ -301,4 +303,43 @@ class MemobaseMcpServer {
 }
 
 const server = new MemobaseMcpServer();
-server.run().catch(console.error);
+
+// 保持进程运行
+const keepAlive = () => {
+  setInterval(() => {
+    console.error('[DEBUG] Server is alive');
+  }, 5000);
+};
+
+// 处理进程信号
+process.on('SIGINT', async () => {
+  console.error('[INFO] Received SIGINT signal');
+  await server.close();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.error('[INFO] Received SIGTERM signal');
+  await server.close();
+  process.exit(0);
+});
+
+// 处理未捕获的异常
+process.on('uncaughtException', (error) => {
+  console.error('[ERROR] Uncaught exception:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[ERROR] Unhandled rejection at:', promise, 'reason:', reason);
+});
+
+// 启动服务器
+server.run()
+  .then(() => {
+    console.error('[INFO] Server started successfully');
+    keepAlive();
+  })
+  .catch((error) => {
+    console.error('[ERROR] Failed to start server:', error);
+    process.exit(1);
+  });

@@ -37,13 +37,13 @@ export interface Tool {
 
 export interface ListToolsRequest {
   jsonrpc: '2.0';
-  method: 'list_tools';
+  method: string;
   params: Record<string, never>;
 }
 
 export interface CallToolRequest {
   jsonrpc: '2.0';
-  method: 'call_tool';
+  method: string;
   params: {
     name: string;
     arguments: Record<string, any>;
@@ -61,7 +61,7 @@ export const ListToolsRequestSchema = {
   type: 'object',
   properties: {
     jsonrpc: { const: '2.0' },
-    method: { const: 'list_tools' },
+    method: { const: 'tools/list', description: 'List available tools' },
     params: { type: 'object', additionalProperties: false },
   },
   required: ['jsonrpc', 'method', 'params'],
@@ -72,7 +72,7 @@ export const CallToolRequestSchema = {
   type: 'object',
   properties: {
     jsonrpc: { const: '2.0' },
-    method: { const: 'call_tool' },
+    method: { const: 'tools/call', description: 'Call a tool' },
     params: {
       type: 'object',
       properties: {
