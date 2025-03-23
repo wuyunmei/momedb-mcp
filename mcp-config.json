@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "momedb": {
+      "command": "node",
+      "args": ["/Users/c0249/Desktop/momedb-mcp/build/index.js"],
+      "env": {
+        "API_BASE_URL": "https://api.memobase.dev/api",
+        "API_TOKEN": "sk-proj-0f89a6ddf181c547-5a2e86d2ae8c57a88ed15f68da1ea45f"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}

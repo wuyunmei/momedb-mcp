@@ -1,3 +1,5 @@
+import { McpError, ErrorCode } from '../mcp/types.js';
+
 export interface User {
   uid: string;
   name: string;
@@ -22,6 +24,32 @@ export interface Blob {
   blob_data: BlobData;
   created_at: string;
   updated_at: string;
+}
+
+// Knowledge Types
+export interface Knowledge {
+  kid: string;
+  uid: string;
+  content: string;
+  embedding?: number[];
+  metadata: {
+    source: string;
+    type: string;
+    tags: string[];
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface KnowledgeRelation {
+  source_kid: string;
+  target_kid: string;
+  relation_type: string;
+  weight: number;
+  metadata: {
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 // Request Types
@@ -56,6 +84,46 @@ export interface GetBlobRequest {
 export interface DeleteBlobRequest {
   uid: string;
   bid: string;
+}
+
+export interface QueryKnowledgeRequest {
+  uid: string;
+  query: string;
+  filters?: {
+    types?: string[];
+    tags?: string[];
+    sources?: string[];
+  };
+  limit?: number;
+}
+
+export interface AddKnowledgeRequest {
+  uid: string;
+  content: string;
+  metadata: {
+    source: string;
+    type: string;
+    tags: string[];
+  };
+}
+
+export interface UpdateKnowledgeRequest {
+  uid: string;
+  kid: string;
+  content?: string;
+  metadata?: {
+    source?: string;
+    type?: string;
+    tags?: string[];
+  };
+}
+
+export interface RelateKnowledgeRequest {
+  uid: string;
+  source_kid: string;
+  target_kid: string;
+  relation_type: string;
+  weight: number;
 }
 
 // Response Types

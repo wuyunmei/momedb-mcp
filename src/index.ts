@@ -8,12 +8,19 @@ import {
 } from './mcp/types.js';
 import * as userTools from './tools/user.js';
 import * as blobTools from './tools/blob.js';
-import { 
-  User, 
-  Blob, 
-  CreateBlobRequest, 
-  GetBlobRequest, 
-  DeleteBlobRequest 
+import * as knowledgeTools from './tools/knowledge.js';
+import {
+  User,
+  Blob,
+  Knowledge,
+  KnowledgeRelation,
+  CreateBlobRequest,
+  GetBlobRequest,
+  DeleteBlobRequest,
+  QueryKnowledgeRequest,
+  AddKnowledgeRequest,
+  UpdateKnowledgeRequest,
+  RelateKnowledgeRequest
 } from './api/types.js';
 
 class MemobaseMcpServer {
@@ -22,7 +29,7 @@ class MemobaseMcpServer {
   constructor() {
     this.server = new Server(
       {
-        name: 'momedb-mcp',
+        name: 'memobase',
         version: '1.0.0',
       },
       {
@@ -144,6 +151,84 @@ class MemobaseMcpServer {
             required: ['uid', 'bid'],
           },
         },
+        {
+          name: 'query_knowledge',
+          description: 'Query knowledge base',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              uid: { type: 'string', description: 'User ID' },
+              query: { type: 'string', description: 'Search query' },
+              filters: {
+                type: 'object',
+                properties: {
+                  types: { type: 'array', items: { type: 'string' }, description: 'Knowledge types to filter' },
+                  tags: { type: 'array', items: { type: 'string' }, description: 'Tags to filter' },
+                  sources: { type: 'array', items: { type: 'string' }, description: 'Sources to filter' },
+                },
+              },
+              limit: { type: 'number', description: 'Maximum number of results' },
+            },
+            required: ['uid', 'query'],
+          },
+        },
+        {
+          name: 'add_knowledge',
+          description: 'Add new knowledge',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              uid: { type: 'string', description: 'User ID' },
+              content: { type: 'string', description: 'Knowledge content' },
+              metadata: {
+                type: 'object',
+                properties: {
+                  source: { type: 'string', description: 'Knowledge source' },
+                  type: { type: 'string', description: 'Knowledge type' },
+                  tags: { type: 'array', items: { type: 'string' }, description: 'Knowledge tags' },
+                },
+                required: ['source', 'type', 'tags'],
+              },
+            },
+            required: ['uid', 'content', 'metadata'],
+          },
+        },
+        {
+          name: 'update_knowledge',
+          description: 'Update existing knowledge',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              uid: { type: 'string', description: 'User ID' },
+              kid: { type: 'string', description: 'Knowledge ID' },
+              content: { type: 'string', description: 'New content' },
+              metadata: {
+                type: 'object',
+                properties: {
+                  source: { type: 'string', description: 'Knowledge source' },
+                  type: { type: 'string', description: 'Knowledge type' },
+                  tags: { type: 'array', items: { type: 'string' }, description: 'Knowledge tags' },
+                },
+              },
+            },
+            required: ['uid', 'kid'],
+          },
+        },
+        {
+          name: 'relate_knowledge',
+          description: 'Create relation between knowledge items',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              uid: { type: 'string', description: 'User ID' },
+              source_kid: { type: 'string', description: 'Source knowledge ID' },
+              target_kid: { type: 'string', description: 'Target knowledge ID' },
+              relation_type: { type: 'string', description: 'Type of relation' },
+              weight: { type: 'number', description: 'Relation weight (0-1)' },
+            },
+            required: ['uid', 'source_kid', 'target_kid', 'relation_type', 'weight'],
+          },
+        },
       ],
     }));
 
@@ -171,6 +256,18 @@ class MemobaseMcpServer {
             break;
           case 'delete_blob':
             result = await blobTools.deleteBlob(request.params.arguments as DeleteBlobRequest);
+            break;
+          case 'query_knowledge':
+            result = await knowledgeTools.queryKnowledge(request.params.arguments as QueryKnowledgeRequest);
+            break;
+          case 'add_knowledge':
+            result = await knowledgeTools.addKnowledge(request.params.arguments as AddKnowledgeRequest);
+            break;
+          case 'update_knowledge':
+            result = await knowledgeTools.updateKnowledge(request.params.arguments as UpdateKnowledgeRequest);
+            break;
+          case 'relate_knowledge':
+            result = await knowledgeTools.relateKnowledge(request.params.arguments as RelateKnowledgeRequest);
             break;
           default:
             throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);

@@ -5,10 +5,14 @@
   "type": "module",
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x build/index.js",
     "start": "node build/index.js",
-    "dev": "ts-node-esm src/index.ts",
+    "dev": "NODE_OPTIONS='--loader ts-node/esm' ts-node-esm src/index.ts",
     "test": "jest"
+  },
+  "type": "module",
+  "bin": {
+    "momedb-mcp": "./build/index.js"
   },
   "dependencies": {
     "axios": "^1.6.7"
